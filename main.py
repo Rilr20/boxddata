@@ -102,7 +102,7 @@ def scrape_additional_data(request_session, url, score, actors, language, direct
     score_per_director(section, score, directors)
 
 def score_per_director(content, score, director):
-    for item in content:
+    for item in content[0]:
         directorname = item.get_text().strip()
         if director.get(directorname) == None:
             director[directorname] = [float(score)]
