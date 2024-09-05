@@ -30,16 +30,22 @@ def main():
         scrape_additional_data(requests_session, item["LetterboxdUri"], item["Rating"], actors, language, directors)
         print(idx)
         idx+=1
+        if idx == 5:
+            break
+    language = dict(sorted(language.items()))
     # scrape_additional_data(data[0]["LetterboxdUri"], data[0]["Rating"], actors, language, directors)
     average_year, films_per_year = get_year_data(data)
+    
+    average_year = dict(sorted(average_year.items()))
+    films_per_year = dict(sorted(films_per_year.items())) 
     # print(average_year)
     # print(films_per_year)
     all_data = {}
     all_data["actors"] = actors
-    all_data["language"] = language
+    all_data["language"] = language # sort by value 
     all_data["directors"] = directors
-    all_data["average_year"] = average_year 
-    all_data["film_year"] = films_per_year
+    all_data["average_year"] =  average_year# sort by key
+    all_data["film_year"] = films_per_year# sort by key
     all_data = json.dumps(all_data, indent=4, ensure_ascii=False)
     f = open("data/data.json", "w", encoding='utf-8')
     f.write(all_data)
