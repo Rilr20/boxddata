@@ -6,7 +6,8 @@ import json
 from bs4 import BeautifulSoup
 import requests
 import re
-import codecs
+import lxml
+import cchardet
 
 def main():
     """
@@ -24,8 +25,9 @@ def main():
     language = {}
     directors = {}
     idx = 1
+    requests_session = requests.Session()
     for item in data:
-        scrape_additional_data(item["LetterboxdUri"], item["Rating"], actors, language, directors)
+        scrape_additional_data(requests_session, item["LetterboxdUri"], item["Rating"], actors, language, directors)
         print(idx)
         idx+=1
     # scrape_additional_data(data[0]["LetterboxdUri"], data[0]["Rating"], actors, language, directors)
@@ -75,15 +77,15 @@ def csv_to_json(data):
     json_object = json.dumps(item_list, indent=4)
     return json_object
 
-def scrape_additional_data(url, score, actors, language, directors):
+def scrape_additional_data(request_session, url, score, actors, language, directors):
     """
     #TODO: Average Actor/Actress Score
     #TODO: Average Director Score
     #TODO: Movies per language
     """
     print(url)
-    response =  requests.get(url)
-    html_content = response.text
+    r =  request_session.get(url)
+    html_content = r.text
     soup = BeautifulSoup(html_content, 'lxml')
     
     # Actors
