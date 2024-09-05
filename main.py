@@ -6,6 +6,7 @@ import json
 from bs4 import BeautifulSoup
 import requests
 import re
+import codecs
 
 def main():
     """
@@ -22,12 +23,28 @@ def main():
     actors = {}
     language = {}
     directors = {}
+    idx = 1
     for item in data:
         scrape_additional_data(item["LetterboxdUri"], item["Rating"], actors, language, directors)
+        print(idx)
+        idx+=1
     # scrape_additional_data(data[0]["LetterboxdUri"], data[0]["Rating"], actors, language, directors)
     average_year, films_per_year = get_year_data(data)
     # print(average_year)
     # print(films_per_year)
+    all_data = {}
+    all_data["actors"] = actors
+    all_data["language"] = language
+    all_data["directors"] = directors
+    all_data["average_year"] = average_year 
+    all_data["film_year"] = films_per_year
+    all_data = json.dumps(all_data, indent=4, ensure_ascii=False)
+    f = open("data/data.json", "w", encoding='utf-8')
+    f.write(all_data)
+    # file = codecs.open("data/data.json", "w", "utf-8")
+    # file.write(all_data)
+
+    
 def csv_to_json(data):
     """
         Converts csv data to json
@@ -67,31 +84,39 @@ def scrape_additional_data(url, score, actors, language, directors):
     print(url)
     response =  requests.get(url)
     html_content = response.text
-    soup = BeautifulSoup(html_content, 'html.parser')
-    section = soup.find('div', attrs={'id': 'tab-crew'}).find_all('a', attrs={"href": re.compile(r'/actor/.*')})
-    score_per_actor(section, score, actors)
+    soup = BeautifulSoup(html_content, 'lxml')
+    
+    # Actors
+    if (soup.find('div', attrs={'id': 'tab-cast'}) != None):
+        section = soup.find('div', attrs={'id': 'tab-cast'}).find_all('a', attrs={"href": re.compile(r'/actor/.*')})
+        score_per_actor(section, score, actors)
     # print(section)
+
+    # Language
     section = soup.find('div', attrs={'id': 'tab-details'}).find_all('a', attrs={"href": re.compile(r'/films/language/.*')})
     movie_language(section, language)
     # print(section)
 
+    # Director
     section = soup.find('div', attrs={'id': 'tab-crew'}).find_all('div')[0].find_all('p')
     score_per_director(section, score, directors)
 
 def score_per_director(content, score, director):
     for item in content:
-        print(item.get_text())
-        if director.get(item.get_text()) == None:
-            director[item.get_text()] = [float(score)]
+        # print(item.get_text())
+        directorname = item.get_text().strip()
+        if director.get(directorname) == None:
+            director[directorname] = [float(score)]
         else:
-            director[item.get_text()].append(float(score))
+            director[directorname].append(float(score))
 
 def score_per_actor(content, score, actors):
     for item in content:
-        if actors.get(item.get_text()) == None:
-            actors[item.get_text()] = [float(score)]
+        actorname = item.get_text().strip()
+        if actors.get(actorname) == None:
+            actors[actorname] = [float(score)]
         else:
-            actors[item.get_text()].append(float(score))
+            actors[actorname].append(float(score))
 
 def movie_language(content, language):
     """
