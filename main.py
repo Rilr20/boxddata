@@ -20,7 +20,6 @@ def main():
     f = open("data/ratings.json", "w")
     f.write(data)
     data = json.loads(data)
-    # print(data[0]["LetterboxdUri"])
     actors = {}
     language = {}
     directors = {}
@@ -30,16 +29,13 @@ def main():
         scrape_additional_data(requests_session, item["LetterboxdUri"], item["Rating"], actors, language, directors)
         print(idx)
         idx+=1
-        if idx == 5:
-            break
+
     language = dict(sorted(language.items()))
-    # scrape_additional_data(data[0]["LetterboxdUri"], data[0]["Rating"], actors, language, directors)
     average_year, films_per_year = get_year_data(data)
     
     average_year = dict(sorted(average_year.items()))
     films_per_year = dict(sorted(films_per_year.items())) 
-    # print(average_year)
-    # print(films_per_year)
+
     all_data = {}
     all_data["actors"] = actors
     all_data["language"] = language # sort by value 
@@ -49,8 +45,6 @@ def main():
     all_data = json.dumps(all_data, indent=4, ensure_ascii=False)
     f = open("data/data.json", "w", encoding='utf-8')
     f.write(all_data)
-    # file = codecs.open("data/data.json", "w", "utf-8")
-    # file.write(all_data)
 
     
 def csv_to_json(data):
@@ -59,7 +53,7 @@ def csv_to_json(data):
     """
     item_list = []
     data = data.split("\n")
-    # columns= data[0].split(",")
+
     for item in data[1:]:
         if (item != ""):
             split_item = item.split(",")
@@ -98,12 +92,10 @@ def scrape_additional_data(request_session, url, score, actors, language, direct
     if (soup.find('div', attrs={'id': 'tab-cast'}) != None):
         section = soup.find('div', attrs={'id': 'tab-cast'}).find_all('a', attrs={"href": re.compile(r'/actor/.*')})
         score_per_actor(section, score, actors)
-    # print(section)
 
     # Language
     section = soup.find('div', attrs={'id': 'tab-details'}).find_all('a', attrs={"href": re.compile(r'/films/language/.*')})
     movie_language(section, language)
-    # print(section)
 
     # Director
     section = soup.find('div', attrs={'id': 'tab-crew'}).find_all('div')[0].find_all('p')
@@ -111,7 +103,6 @@ def scrape_additional_data(request_session, url, score, actors, language, direct
 
 def score_per_director(content, score, director):
     for item in content:
-        # print(item.get_text())
         directorname = item.get_text().strip()
         if director.get(directorname) == None:
             director[directorname] = [float(score)]
@@ -141,8 +132,7 @@ def get_year_data(data):
     """
     avg_score = {}
     films = {}
-    # score = get_average_score_per_year(data)
-    # films = get_films_watched_per_year(data)
+
     for item in data:
         if avg_score.get(item["Year"]) == None:
             avg_score[item["Year"]] = [float(item["Rating"])]
@@ -163,7 +153,6 @@ def convert_html_to_text(html):
     res = []
     [res.append(x) for x in text if x not in res]
     return res
-#TODO: Movie genres; pie chart?
 
 if __name__ == "__main__":
     main()
