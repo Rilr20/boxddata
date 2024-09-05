@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+<div style="display: flex;">
+    <div><p style="text-align: center;">Director</p><ol id="directors"></ol></div>
+    <div><p style="text-align: center;">Actor</p><ol id="actors"></ol></div>
+    <div><p style="text-align: center;">Language</p><ol id="language"></ol></div>
+</div>
+
+
+<div style="max-height: 600px; margin:auto;">
+    <canvas id="myChart"></canvas>
+</div>
+
+<div style="max-height: 600px; margin:auto;">
+    <canvas id="myChart2"></canvas>
+</div>
+
+<div style="max-height: 600px; margin:auto;">
+    <canvas id="myChart3"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('myChart');
+    const ctx2 = document.getElementById('myChart2');
+    const ctx3 = document.getElementById('myChart3');
+    const directordiv = document.getElementById('directors');
+    const actordiv = document.getElementById('actors');
+    const languagediv = document.getElementById('language');
+    main()
+    
+
+    async function getFile() {
+        path = "../data/data.json"
+        const response = await fetch(path)
+        const json = await response.json();
+        addMissingYears(json)
+
+        return json
+    }
+    function addMissingYears(json) {
+        delete json.film_year[""]
+        // console.log(json.film_year[""]);
+        let keys = Object.keys(json.film_year)
+        // console.log(keys[keys.length-1]);
+        let start_number = keys[0]
+        let end = keys[keys.length-1]
+        while (start_number < end) {
+            if (json.film_year[start_number] === undefined) {
+                json.film_year[start_number] = 0
+            }
+            start_number++
+        }
+        return json
+    }
+    function getAverageScore(json, key, min=0) {
+        let array = []
+
+        let keys = Object.keys(json[key])
+
+        keys.forEach((item) => {
+
+            if (json[key][item].length >= min) {
+                array.push({key: item, score: Math.round((json[key][item].reduce((a, b) => a + b) / json[key][item].length) * 100) / 100 })
+            }
+        })
+        console.log(array);
+        
+        array = array.sort((a,b) => b.score-a.score)
+        console.log(array);
+        return array
+    }
+    function averageScorePerYear(json, min=0) {
+        let newJson = {}
+        delete json.average_year[""]
+
+        let keys = Object.keys(json.average_year)
+        let start_number = parseInt(keys[0])
+        let end = parseInt(keys[keys.length - 1]) 
+
+        while (start_number < end) {
+            
+            if (json.average_year[start_number] === undefined) {
+                newJson[start_number] = 0
+
+            } else {
+                if (json.average_year[start_number].length >= min) {
+                    newJson[start_number] = Math.round((json.average_year[start_number].reduce((a, b)=> a+b) / json.average_year[start_number].length)*100)/100
+                } else {
+                    newJson[start_number] = 0
+
+                }
+
+            }
+            start_number++
+        }
+        return newJson
+    }
+    async function main() {
+
+        const json = await getFile()
+        let actors = getAverageScore(json, "actors", 5)
+        let directors = getAverageScore(json, "directors", 5)
+        let element = document.createElement("br");
+        for (let i = 0; i < 20; i++) {
+            let element = document.createElement("li")
+            element.innerHTML = `${actors[i].key} ${actors[i].score}`
+            actordiv.append(element)
+        }
+        actordiv.append(element)
+
+        for (let i = 0; i < 20; i++) {
+            let element = document.createElement("li")
+            element.innerHTML = `${directors[i].key} ${directors[i].score}`
+            directordiv.append(element)
+        }
+        directordiv.append(element)
+
+        let languages = Object.keys(json.language)
+        // console.log(console.log(json.language[languages[1]]));
+        for (let i = 0; i < 20; i++) {
+            let element = document.createElement("li")
+            element.innerHTML = `${languages[i]} ${json.language[languages[i]]}`
+            languagediv.append(element)
+        }
+        languagediv.append(element)
+
+        let averageScore = averageScorePerYear(json)
+        let averageScoreMin = averageScorePerYear(json, 5)
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(json.film_year),
+                datasets: [{
+                    label: 'Average Score min 5 films',
+                    data: averageScoreMin,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(json.film_year),
+                datasets: [{
+                    label: 'Average Score per year',
+                    data: averageScore,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(json.film_year),
+                datasets: [{
+                    label: '# of Films watched per Year',
+                    data: json.film_year,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    </script>
+    </body>
+</html>
