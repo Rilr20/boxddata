@@ -145,9 +145,9 @@ def get_year_data(data):
     # films = get_films_watched_per_year(data)
     for item in data:
         if avg_score.get(item["Year"]) == None:
-            avg_score[item["Year"]] = [item["Rating"]]
+            avg_score[item["Year"]] = [float(item["Rating"])]
         else:
-            avg_score[item["Year"]].append(item["Rating"])
+            avg_score[item["Year"]].append(float(item["Rating"]))
 
         if films.get(item["Year"]) == None:
             films[item["Year"]] = 1
