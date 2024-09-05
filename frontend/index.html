@@ -9,8 +9,16 @@
 <body>
 
 <div style="display: flex;">
-    <div><p style="text-align: center;">Director</p><ol id="directors"></ol></div>
-    <div><p style="text-align: center;">Actor</p><ol id="actors"></ol></div>
+    <div><p style="text-align: center;">Director min. 5 films</p><ol id="directors"></ol></div>
+        <div>
+            <p style="text-align: center;">Director</p>
+            <ol id="directors2"></ol>
+        </div>
+    <div><p style="text-align: center;">Actor min. 5 films</p><ol id="actors"></ol></div>
+    <div>
+        <p style="text-align: center;">Actor</p>
+        <ol id="actors2"></ol>
+    </div>
     <div><p style="text-align: center;">Language</p><ol id="language"></ol></div>
 </div>
 
@@ -34,7 +42,9 @@
     const ctx2 = document.getElementById('myChart2');
     const ctx3 = document.getElementById('myChart3');
     const directordiv = document.getElementById('directors');
+    const directordiv2 = document.getElementById('directors2');
     const actordiv = document.getElementById('actors');
+    const actordiv2 = document.getElementById('actors2');
     const languagediv = document.getElementById('language');
     main()
     
@@ -109,19 +119,27 @@
 
         const json = await getFile()
         let actors = getAverageScore(json, "actors", 5)
+        let actorsNoLimit = getAverageScore(json, "actors")
         let directors = getAverageScore(json, "directors", 5)
+        let directorsNoLimit = getAverageScore(json, "directors")
         let element = document.createElement("br");
         for (let i = 0; i < 20; i++) {
             let element = document.createElement("li")
+            let element2 = document.createElement("li")
             element.innerHTML = `${actors[i].key} ${actors[i].score}`
             actordiv.append(element)
+            element2.innerHTML = `${actorsNoLimit[i].key} ${actorsNoLimit[i].score}`
+            actordiv2.append(element2)
         }
         actordiv.append(element)
 
         for (let i = 0; i < 20; i++) {
             let element = document.createElement("li")
+            let element2 = document.createElement("li")
             element.innerHTML = `${directors[i].key} ${directors[i].score}`
             directordiv.append(element)
+            element2.innerHTML = `${directorsNoLimit[i].key} ${directorsNoLimit[i].score}`
+            directordiv2.append(element2)
         }
         directordiv.append(element)
 
@@ -141,7 +159,7 @@
             data: {
                 labels: Object.keys(json.film_year),
                 datasets: [{
-                    label: 'Average Score min 5 films',
+                    label: 'average score per year min. 5 films',
                     data: averageScoreMin,
                     borderWidth: 1
                 }]
