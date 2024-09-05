@@ -30,7 +30,7 @@ def main():
         print(idx)
         idx+=1
 
-    language = dict(sorted(language.items()))
+    language = dict(sorted(language.items(), key=lambda x:x[1], reverse=True))
     average_year, films_per_year = get_year_data(data)
     
     average_year = dict(sorted(average_year.items()))
@@ -83,7 +83,7 @@ def scrape_additional_data(request_session, url, score, actors, language, direct
     #TODO: Average Director Score
     #TODO: Movies per language
     """
-    print(url)
+    # print(url)
     r =  request_session.get(url)
     html_content = r.text
     soup = BeautifulSoup(html_content, 'lxml')
