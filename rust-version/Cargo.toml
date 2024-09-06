@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 soup="0.5.1"
+serde_json="*"
