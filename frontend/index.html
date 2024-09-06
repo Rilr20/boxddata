@@ -74,6 +74,7 @@
     }
     function getAverageScore(json, key, min=0) {
         let array = []
+        delete json[key][""]
 
         let keys = Object.keys(json[key])
 
