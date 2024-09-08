@@ -7,7 +7,6 @@ use reqwest::{self, Url};
 use std::error::Error;
 use scraper;
 
-
 #[derive(Serialize, Deserialize)]
 struct Actors {
     actors: HashMap<String, Vec<f32>>,
@@ -77,11 +76,7 @@ async fn main() {
         get_year_data(&mut average_year, &mut films_per_year, item["Rating"].to_string(), item["Year"].to_string(),);
         idx+=1;
     }
-    println!("{:?}", language);
-    println!("{:?}",directors);
-    println!("{:?}",actors);
-    println!("{:?}",average_year);
-    println!("{:?}",films_per_year);
+
     let all_data = AllData {
         actors: actors,
         directors: directors,
@@ -90,7 +85,7 @@ async fn main() {
         language: language,
     };
 
-    write_to_json(&all_data, "output.json");
+    let _ = write_to_json(&all_data, "../data/rust-data.json");
 
 
 }
