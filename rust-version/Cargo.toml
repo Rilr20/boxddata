@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 soup="0.5.1"
 serde_json="*"
+serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 reqwest="*"
 scraper = "0.20.0"
