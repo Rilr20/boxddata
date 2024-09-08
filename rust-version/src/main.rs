@@ -2,9 +2,51 @@ use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use serde_json::{Value, Map};
+use serde::{Serialize, Deserialize};
 use reqwest::{self, Url};
 use std::error::Error;
 use scraper;
+
+
+#[derive(Serialize, Deserialize)]
+struct Actors {
+    actors: HashMap<String, Vec<f32>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Language {
+    language: HashMap<String, i32>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Directors {
+    directors: HashMap<String, Vec<f32>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct AverageYear {
+    average_year: HashMap<String, Vec<f32>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct FilmsPerYear {
+    films_per_year: HashMap<String, i32>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct AllData {
+    actors: HashMap<String, Vec<f32>>,
+    directors: HashMap<String, Vec<f32>>,
+    average_year: HashMap<String, Vec<f32>>,
+    films_per_year: HashMap<String, i32>,
+    language: HashMap<String, i32>
+}
+
+fn write_to_json(all_data: &AllData, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let json = serde_json::to_string_pretty(all_data)?;
+    fs::write(filename, json)?;
+    Ok(())
+}
 
 fn write_to_file(data:&Vec<Map<String,Value>>) -> std::io::Result<()> {
     let file = File::create("../data/rating.json")?;
@@ -25,18 +67,30 @@ async fn main() {
     let mut actors: HashMap<String, Vec<f32>> = HashMap::new();
     let mut language: HashMap<String, i32> = HashMap::new();
     let mut directors: HashMap<String, Vec<f32>> = HashMap::new();
-
+    let mut average_year: HashMap<String, Vec<f32>> = HashMap::new();
+    let mut films_per_year: HashMap<String, i32> = HashMap::new();
 
     let mut idx= 1;
     for item in data {
         println!("{}", idx);
         let _ = scrape_additional_data(item["LetterboxdUri"].to_string(), item["Rating"].to_string(), &mut actors, &mut language, &mut directors).await;
+        get_year_data(&mut average_year, &mut films_per_year, item["Rating"].to_string(), item["Year"].to_string(),);
         idx+=1;
     }
-
     println!("{:?}", language);
     println!("{:?}",directors);
     println!("{:?}",actors);
+    println!("{:?}",average_year);
+    println!("{:?}",films_per_year);
+    let all_data = AllData {
+        actors: actors,
+        directors: directors,
+        average_year: average_year,
+        films_per_year: films_per_year,
+        language: language,
+    };
+
+    write_to_json(&all_data, "output.json");
 
 
 }
@@ -145,6 +199,13 @@ async fn scrape_additional_data(url: String, score: String, actors:&mut HashMap<
 }
 
 
-fn get_year_data() {}
-
-fn convert_html_to_text() {}
+fn get_year_data(average_year: &mut HashMap<String, Vec<f32>>, films_per_year:&mut HashMap<String, i32>, score: String, year:String) {
+    let true_year:String = serde_json::from_str(year.as_str()).unwrap();
+    if true_year != "" {
+        let split_score: Vec<&str> = score.split("\"").collect();
+        let new_score: &str = split_score[1];
+        let score_parsed: f32 = new_score.parse().expect("Failed to parse score");
+            average_year.entry(true_year.clone()).or_insert(Vec::new()).push(score_parsed);
+            films_per_year.entry(true_year.clone()).and_modify(|count| *count += 1).or_insert(1);
+    }
+}
