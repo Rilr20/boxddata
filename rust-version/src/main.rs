@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use serde_json::{Value, Map};
@@ -6,6 +6,7 @@ use serde::{Serialize, Deserialize};
 use reqwest::{self, Url};
 use std::error::Error;
 use scraper;
+use std::cmp::Ordering;
 
 #[derive(Serialize, Deserialize)]
 struct Actors {
@@ -29,7 +30,7 @@ struct AverageYear {
 
 #[derive(Serialize, Deserialize)]
 struct FilmsPerYear {
-    films_per_year: HashMap<String, i32>,
+    film_year: HashMap<String, i32>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -37,8 +38,8 @@ struct AllData {
     actors: HashMap<String, Vec<f32>>,
     directors: HashMap<String, Vec<f32>>,
     average_year: HashMap<String, Vec<f32>>,
-    films_per_year: HashMap<String, i32>,
-    language: HashMap<String, i32>
+    film_year: HashMap<String, i32>,
+    language: HashMap<String, i32>,
 }
 
 fn write_to_json(all_data: &AllData, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -67,13 +68,13 @@ async fn main() {
     let mut language: HashMap<String, i32> = HashMap::new();
     let mut directors: HashMap<String, Vec<f32>> = HashMap::new();
     let mut average_year: HashMap<String, Vec<f32>> = HashMap::new();
-    let mut films_per_year: HashMap<String, i32> = HashMap::new();
+    let mut film_year: HashMap<String, i32> = HashMap::new();
 
     let mut idx= 1;
     for item in data {
         println!("{}", idx);
         let _ = scrape_additional_data(item["LetterboxdUri"].to_string(), item["Rating"].to_string(), &mut actors, &mut language, &mut directors).await;
-        get_year_data(&mut average_year, &mut films_per_year, item["Rating"].to_string(), item["Year"].to_string(),);
+        get_year_data(&mut average_year, &mut film_year, item["Rating"].to_string(), item["Year"].to_string(),);
         idx+=1;
     }
 
@@ -81,7 +82,7 @@ async fn main() {
         actors: actors,
         directors: directors,
         average_year: average_year,
-        films_per_year: films_per_year,
+        film_year: film_year,
         language: language,
     };
 
