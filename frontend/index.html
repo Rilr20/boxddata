@@ -58,10 +58,16 @@
         return json
     }
     function addMissingYears(json) {
-        delete json.film_year[""]
+        try {
+            delete json.film_year[""]
+            
+        } catch (error) {
+            console.log("doesn't exist");
+        }
         // console.log(json.film_year[""]);
+        console.log(json);
         let keys = Object.keys(json.film_year)
-        // console.log(keys[keys.length-1]);
+        keys = keys.sort((a, b) => b.score - a.score)
         let start_number = keys[0]
         let end = keys[keys.length-1]
         while (start_number < end) {
@@ -144,15 +150,22 @@
         }
         directordiv.append(element)
 
-        let languages = Object.keys(json.language)
-        // console.log(console.log(json.language[languages[1]]));
-        for (let i = 0; i < 20; i++) {
+        const langArray = Object.entries(json.language);
+        langArray.sort((a, b) => parseInt(b[1]) - parseInt(a[1]));
+        const sortedLangObj = Object.fromEntries(langArray);
+        let i = 1;
+        for (const [key, value] of Object.entries(sortedLangObj)) {
             let element = document.createElement("li")
-            element.innerHTML = `${languages[i]} ${json.language[languages[i]]}`
+            element.innerHTML = `${key} ${value}`
+            // console.log(`${key}: ${value}`);
             languagediv.append(element)
+            if (i === 20) {
+                break;
+            }
+            i++
         }
         languagediv.append(element)
-
+        
         let averageScore = averageScorePerYear(json)
         let averageScoreMin = averageScorePerYear(json, 5)
         new Chart(ctx3, {
