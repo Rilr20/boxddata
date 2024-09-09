@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<div style="display: flex;">
+<div style="display: flex; justify-content: center;">
     <div><p style="text-align: center;">Director min. 5 films</p><ol id="directors"></ol></div>
         <div>
             <p style="text-align: center;">Director</p>
@@ -209,7 +209,7 @@
             data: {
                 labels: Object.keys(json.film_year),
                 datasets: [{
-                    label: '# of Films watched per Year',
+                    label: '# of Films per Year watched',
                     data: json.film_year,
                     borderWidth: 1
                 }]
